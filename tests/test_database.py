@@ -1,0 +1,56 @@
+"""
+Утилиты для тестовой (в памяти) базы данных.
+
+Этот модуль предоставляет:
+- асинхронный движок testengine для SQLite в памяти;
+- фабрику сессий testsessionlocal (asyncsessionmaker) для получения AsyncSession в тестах;
+- вспомогательные функции createtesttables() и droptesttables() для создания/удаления
+  таблиц, описанных в Base.metadata.
+
+Назначение:
+- Быстро подготовить изолированную БД для юнит/интеграционных тестов без необходимости внешнего СУБД.
+- Упростить написание фикстур pytest/asyncio.
+"""
+
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    AsyncSession,
+    async_sessionmaker
+)
+from src.my_project.database_core import Base
+
+TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"  # Тестовая база в памяти (aiosqlite).
+test_engine = create_async_engine(TEST_DATABASE_URL)  # Асинхронный движок для тестов.
+
+# Фабрика асинхронных сессий для тестов.
+test_session_local = async_sessionmaker(
+    bind=test_engine,  # Привязка сессию к тестовому движку
+    autoflush=False,  # Изменения не отправляются автоматически при чтении, что удобно в тестах.
+    expire_on_commit=False,  # Объекты не будут "истекать" после commit, удобно для проверки состояний.
+    class_=AsyncSession  # Использование асинхронной сессии
+)
+
+
+async def create_test_tables() -> None:
+    """
+    Создать все таблицы, описанные в Base.metadata, в тестовой БД.
+
+    :return: Функция не содержит return, поэтому по завершении возвращает None (неявно).
+    """
+    async with test_engine.begin() as conn:  # Открытие транзакционного контекста на уровне соединения асинхронного движка.
+        await conn.run_sync(Base.metadata.create_all)  # Создаёт таблицы в контексте текущего соединения.
+        await conn.execute(
+            text("PRAGMA journal_mode=WAL"))  # Режим журналирования WAL повышает конкуренцию записи/чтения.
+        print("Test tables created.")  # Небольшая информационная отладка — удобно при запуске локально.
+
+
+async def drop_test_tables() -> None:
+    """
+    Удалить все таблицы, описанные в Base.metadata, из тестовой БД.
+
+    :return: Функция не содержит return, поэтому по завершении возвращает None (неявно).
+    """
+    async with test_engine.begin() as conn:  # Открытие транзакционного контекста на уровне соединения асинхронного движка.
+        await conn.run_sync(Base.metadata.drop_all)  # Удаляет таблицы в контексте текущего соединения.
+        print("Test tables dropped")  # Небольшая информационная отладка — удобно при запуске локально.

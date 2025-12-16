@@ -1,0 +1,156 @@
+"""
+API-маршруты для работы с задачами (Task).
+
+Этот модуль содержит FastAPI-роутер с CRUD-эндпоинтами для сущности Task.
+Каждая операция использует асинхронную сессию SQLAlchemy через Depends(get_db)
+и репозиторий TaskRepository для доступа к данным.
+"""
+
+from typing import (
+    List,
+    Dict
+)
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Depends
+)
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.my_project.database_core.database import get_db
+from src.my_project.repositories import TaskRepository
+from src.my_project.schemas import (
+    DbTask,
+    TaskCreate,
+    TaskUpdate
+)
+
+# Роутер для операций над задачами. prefix задаёт префикс всех путей в этом модуле,
+# tags используется в автодокументации (Swagger/OpenAPI).
+router = APIRouter(
+    prefix="/tasks",
+    tags=["Задачи"],
+)
+
+
+@router.get(
+    "",
+    summary="Получить список всех задач",
+    response_model=List[DbTask]
+)
+async def get_tasks(
+        session: AsyncSession = Depends(get_db)
+) -> List[DbTask] | List:
+    """
+    Получает список всех задач.
+
+    :param session: Асинхронная сессия.
+    :return: List[DbTask]: Список объектов DbTask, представляющих задачи.
+    """
+    tasks = await TaskRepository.get_all(
+        session=session,
+    )
+    return tasks
+
+
+@router.get(
+    "/{task_id}",
+    summary="Получить информацию о конкретной задаче",
+    response_model=DbTask
+)
+async def get_task(
+        task_id: int,
+        session: AsyncSession = Depends(get_db)
+) -> DbTask:
+    """
+    Получает информацию о задаче по ее ID.
+
+    :param task_id: ID задачи.
+    :param session: Асинхронная сессия.
+    :return: DbTask: Объект DbTask, представляющий задачу.
+    """
+    task = await TaskRepository.get_one(
+        task_id=task_id,
+        session=session
+    )
+    if task:
+        return task
+
+    raise HTTPException(status_code=404, detail="Task is not exist")
+
+
+@router.post(
+    "",
+    summary="Создать новую задачу",
+    response_model=DbTask
+)
+async def add_task(
+        task: TaskCreate,
+        session: AsyncSession = Depends(get_db),
+) -> DbTask:
+    """
+    Создает новую задачу.
+
+    :param task: Объект TaskCreate, содержащий данные для новой задачи.
+    :param session: Асинхронная сессия.
+    :return: DbTask: Объект DbTask, представляющий созданную задачу.
+    """
+    db_task = await TaskRepository.add_task(
+        new_task=task,
+        session=session,
+    )
+
+    return db_task
+
+
+@router.put(
+    "/{task_id}",
+    summary="Обновить информацию о задаче",
+    response_model=DbTask
+)
+async def task_update(
+        task_id: int,
+        task_for_update: TaskUpdate,
+        session: AsyncSession = Depends(get_db)
+) -> DbTask:
+    """
+    Обновляет информацию о задаче по ее ID.
+
+    :param task_id: ID задачи.
+    :param task_for_update: Объект TaskUpdate, содержащий новые данные для задачи.
+    :param session: Асинхронная сессия.
+    :return: DbTask: Объект DbTask, представляющий обновленную задачу.
+    """
+    task = await TaskRepository.update_task(
+        task_id=task_id,
+        task_for_update=task_for_update,
+        session=session,
+    )
+    if task:
+        return task
+
+    raise HTTPException(status_code=404, detail="Task is not exist")
+
+
+@router.delete(
+    "/{task_id}",
+    summary="Удалить задачу"
+)
+async def task_delete(
+        task_id: int,
+        session: AsyncSession = Depends(get_db),
+) -> Dict[str, str]:
+    """
+    Удаляет задачу по ее ID.
+
+    :param task_id: ID задачи.
+    :param session: Асинхронная сессия.
+    :return: Dict[str, str]: Словарь с сообщением об успешном удалении.
+    """
+    task_for_delete = await TaskRepository.delete_task(
+        task_id=task_id,
+        session=session,
+    )
+    if task_for_delete:
+        return {"message": f"Task with ID {task_id} deleted successfully"}
+
+    raise HTTPException(status_code=404, detail="Task is not exists")
