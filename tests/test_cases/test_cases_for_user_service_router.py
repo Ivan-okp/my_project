@@ -11,17 +11,17 @@ test_cases_service_user_router_for_create_new_user = [
         {"name": "test user", "email": "test@mail.com", "password": "123456789", "id": 1},
     ),
     (
-        {"email": "test@mail.com", "password": "123456789"},  # Нет имени
+        {"email": "test@mail.com", "password": "123456789"},
         422,
         None,
     ),
     (
-        {"name": "test user", "password": "123456789"},  # Нет email
+        {"name": "test user", "password": "123456789"},
         422,
         None,
     ),
     (
-        {"name": "test user", "email": "test@mail.com"},  # Нет пароля
+        {"name": "test user", "email": "test@mail.com"},
         422,
         None,
     ),
@@ -34,7 +34,7 @@ test_cases_service_user_router_for_login_user = [
         {"token_value": "access_token", "token_type": "Bearer"}
     ),
     (
-        4,  # неизвестный пользователь
+        4,
         404,
         None
     ),

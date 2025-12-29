@@ -14,17 +14,17 @@ test_cases_task_router_for_get_task = [
         {"title": f"testtask_1", "body": f"testbody_1_for_testtask1", "status": "New", "user": 1},
     ),
     (
-        4,  # id выходит из диапазона
+        4,
         404,
         None,
     ),
     (
-        True,  # неверный формат id
+        True,
         422,
         None,
     ),
     (
-        None,  # id отсутствует
+        None,
         422,
         None,
     ),
@@ -37,44 +37,42 @@ test_cases_task_router_for_add_task = [
         {"title": "task_for_test", "body": "body for test task", "status": "New", "user": 1, "id": 1},
     ),
     (
-        {"body": "body for test task", "status": "New", "user": 1},  # нет названия
+        {"body": "body for test task", "status": "New", "user": 1},
         422,
         None,
     ),
     (
-        {"title": "task_for_test", "status": "New", "user": 1},  # нет тела задачи
+        {"title": "task_for_test", "status": "New", "user": 1},
         422,
         None,
     ),
     (
-        {"title": "task_for_test", "body": "body for test task", "user": 1},  # нет статуса
+        {"title": "task_for_test", "body": "body for test task", "user": 1},
         422,
         None,
     ),
     (
-        {"title": "task_for_test", "body": "body for test task", "status": "New"},  # нет пользователя
+        {"title": "task_for_test", "body": "body for test task", "status": "New"},
         422,
         None,
     ),
     (
-        {"title": 12345, "body": "body for test task", "status": "New", "user": 1},  # неверный формат названия
+        {"title": 12345, "body": "body for test task", "status": "New", "user": 1},
         422,
         None,
     ),
     (
-        {"title": "task_for_test", "body": 12345, "status": "New", "user": 1},  # неверный формат описания задачи
+        {"title": "task_for_test", "body": 12345, "status": "New", "user": 1},
         422,
         None,
     ),
     (
         {"title": "task_for_test", "body": "body for test task", "status": "Old", "user": 1},
-        # неверный формат статуса задачи
         422,
         None,
     ),
     (
         {"title": "task_for_test", "body": "body for test task", "status": "New", "user": "user"},
-        # неверный формат пользователя
         422,
         None,
     ),
@@ -90,21 +88,21 @@ test_cases_task_router_for_update_task = [
     ),
     (
         0,
-        None,  # отсутствует id
+        None,
         {"title": "test add task", "body": "test body for test add", "status": "New"},
         422,
         None,
     ),
     (
         0,
-        11,  # id выходит из диапазона
+        11,
         {"title": "test add task", "body": "test body for test add", "status": "New"},
         404,
         None,
     ),
     (
         0,
-        False,  # id имеет неверный формат
+        False,
         {"title": "test add task", "body": "test body for test add", "status": "New"},
         422,
         None,
@@ -112,21 +110,21 @@ test_cases_task_router_for_update_task = [
     (
         0,
         1,
-        {"body": "test body for test add", "status": "New"},  # отсутствует название задачи
+        {"body": "test body for test add", "status": "New"},
         422,
         None,
     ),
     (
         0,
         1,
-        {"title": "test add task", "status": "New"},  # отсутствует описание задачи
+        {"title": "test add task", "status": "New"},
         422,
         None,
     ),
     (
         0,
         1,
-        {"title": "test add task", "body": "test body for test add"},  # отсутствует статус
+        {"title": "test add task", "body": "test body for test add"},
         422,
         None,
     ),
@@ -141,19 +139,19 @@ test_cases_task_router_for_delete_task = [
     ),
     (
         0,
-        None,  # id отсутствует
+        None,
         422,
         None,
     ),
     (
         0,
-        4,  # id выходит из диапазона
+        4,
         404,
         None,
     ),
     (
         0,
-        False,  # id имеет неверный формат
+        False,
         422,
         None,
     ),

@@ -36,24 +36,24 @@ test_cases_service_task_router_for_get_specific_task = [
     (
         0,
         {"token": "00000000"},
-        4,  # id выходит из диапазона
-        "testtask_4",  # несуществующее название задачи
+        4,
+        "testtask_4",
         404,
         None,
     ),
     (
         0,
         {"token": "00000000"},
-        False,  # id имеет неверный формат
-        12345,  # название задачи имеет неверный формат
+        False,
+        12345,
         404,
         None,
     ),
     (
         0,
         {"token": "00000000"},
-        None,  # id с отсутствующим значением
-        None,  # название задачи с отсутствует
+        None,
+        None,
         404,
         None,
     ),
@@ -85,21 +85,21 @@ test_cases_service_task_router_for_create_task = [
     (
         1,
         {"token": "00000000"},
-        {"body": "test body for test add", "status": "New", "user": 1},  # отсутствует название задачи
+        {"body": "test body for test add", "status": "New", "user": 1},
         422,
         None,
     ),
     (
         1,
         {"token": "00000000"},
-        {"title": "test add task", "status": "New", "user": 1},  # отсутствует тело задачи
+        {"title": "test add task", "status": "New", "user": 1},
         422,
         None,
     ),
     (
         1,
         {"token": "00000000"},
-        {"title": "test add task", "body": "test body for test add", "user": 1},  # отсутствует статус
+        {"title": "test add task", "body": "test body for test add", "user": 1},
         422,
         None,
     ),

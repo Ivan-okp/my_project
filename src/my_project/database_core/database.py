@@ -26,19 +26,19 @@ class Base(DeclarativeBase):
     pass
 
 
-current_file_path = os.path.abspath(__file__) # Получение абсолютного пути к текущему файлу
-my_app_dir = os.path.dirname(current_file_path) # Получение пути к директории приложения
+current_file_path = os.path.abspath(__file__)
+my_app_dir = os.path.dirname(current_file_path)
 
-db_path = os.path.join(my_app_dir, "db_for_tasks_and_users") # Формирование пути к файлу базы данных
+db_path = os.path.join(my_app_dir, "db_for_tasks_and_users")
 
-DATABASE_URL = f"sqlite+aiosqlite:///{db_path}" # Формирование URL подключения к базе данных SQLite
-async_engine = create_async_engine(DATABASE_URL) # Создание асинхронный движок SQLAlchemy
+DATABASE_URL = f"sqlite+aiosqlite:///{db_path}"
+async_engine = create_async_engine(DATABASE_URL)
 
 async_session_local = async_sessionmaker(
-    bind=async_engine, # Привязка сессию к движку
-    autoflush=False, # Отключение автоматической отправки изменений в базу данных
-    expire_on_commit=False, # Отключение истечения срока действия сессии после коммита
-    class_=AsyncSession # Использование асинхронной сессии
+    bind=async_engine,
+    autoflush=False,
+    expire_on_commit=False,
+    class_=AsyncSession
 )
 
 
@@ -54,6 +54,6 @@ async def get_db() -> AsyncSession:
         Yields:
             AsyncSession: Асинхронная сессия базы данных.
     """
-    async with async_session_local() as session:  # Создание асинхронной сессии
-        async with session.begin():  # Начинало асинхронной транзакции
-            yield session  # Предоставление сессии для использования
+    async with async_session_local() as session:
+        async with session.begin():
+            yield session

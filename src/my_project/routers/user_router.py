@@ -23,8 +23,6 @@ from src.my_project.schemas import (
     UserUpdate
 )
 
-# Роутер для операций над задачами. prefix задаёт префикс всех путей в этом модуле,
-# tags используется в автодокументации (Swagger/OpenAPI).
 router = APIRouter(
     prefix="/users",
     tags=["Пользователи"],

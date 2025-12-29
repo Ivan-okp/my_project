@@ -31,8 +31,6 @@ from typing import (
     Dict
 )
 
-# Роутер для операций над задачами. prefix задаёт префикс всех путей в этом модуле,
-# tags используется в автодокументации (Swagger/OpenAPI).
 router = APIRouter(
     prefix="/service",
     tags=["Сервис (работа с задачами пользователя)"],

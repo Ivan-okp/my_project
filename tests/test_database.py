@@ -20,15 +20,14 @@ from sqlalchemy.ext.asyncio import (
 )
 from src.my_project.database_core import Base
 
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"  # Тестовая база в памяти (aiosqlite).
-test_engine = create_async_engine(TEST_DATABASE_URL)  # Асинхронный движок для тестов.
+TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+test_engine = create_async_engine(TEST_DATABASE_URL)
 
-# Фабрика асинхронных сессий для тестов.
 test_session_local = async_sessionmaker(
-    bind=test_engine,  # Привязка сессию к тестовому движку
-    autoflush=False,  # Изменения не отправляются автоматически при чтении, что удобно в тестах.
-    expire_on_commit=False,  # Объекты не будут "истекать" после commit, удобно для проверки состояний.
-    class_=AsyncSession  # Использование асинхронной сессии
+    bind=test_engine,
+    autoflush=False,
+    expire_on_commit=False,
+    class_=AsyncSession
 )
 
 
@@ -38,11 +37,11 @@ async def create_test_tables() -> None:
 
     :return: Функция не содержит return, поэтому по завершении возвращает None (неявно).
     """
-    async with test_engine.begin() as conn:  # Открытие транзакционного контекста на уровне соединения асинхронного движка.
-        await conn.run_sync(Base.metadata.create_all)  # Создаёт таблицы в контексте текущего соединения.
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
         await conn.execute(
-            text("PRAGMA journal_mode=WAL"))  # Режим журналирования WAL повышает конкуренцию записи/чтения.
-        print("Test tables created.")  # Небольшая информационная отладка — удобно при запуске локально.
+            text("PRAGMA journal_mode=WAL"))
+        print("Test tables created.")
 
 
 async def drop_test_tables() -> None:
@@ -51,6 +50,6 @@ async def drop_test_tables() -> None:
 
     :return: Функция не содержит return, поэтому по завершении возвращает None (неявно).
     """
-    async with test_engine.begin() as conn:  # Открытие транзакционного контекста на уровне соединения асинхронного движка.
-        await conn.run_sync(Base.metadata.drop_all)  # Удаляет таблицы в контексте текущего соединения.
-        print("Test tables dropped")  # Небольшая информационная отладка — удобно при запуске локально.
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        print("Test tables dropped")

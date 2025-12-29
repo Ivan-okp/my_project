@@ -12,17 +12,17 @@ test_cases_user_router_for_get_user = [
         {"name": "testuser_1", "email": "testuser_1@example.com", "password": "1234567891"},
     ),
     (
-        4, # id выходит из диапазона
+        4,
         404,
         None,
     ),
     (
-        True, # неверный формат id
+        True,
         422,
         None,
     ),
     (
-        None, # id отсутствует
+        None,
         422,
         None,
     ),
@@ -35,32 +35,32 @@ test_cases_user_router_for_add_user = [
         {"name": "test user", "email": "test@mail.com", "password": "123456789", "id": 1},
     ),
     (
-        {"email": "test@mail.com", "password": "123456789"},  # Нет имени
+        {"email": "test@mail.com", "password": "123456789"},
         422,
         None,
     ),
     (
-        {"name": "test user", "password": "123456789"},  # Нет email
+        {"name": "test user", "password": "123456789"},
         422,
         None,
     ),
     (
-        {"name": "test user", "email": "test@mail.com"},  # Нет пароля
+        {"name": "test user", "email": "test@mail.com"},
         422,
         None,
     ),
     (
-        {"name": 12345, "email": "test@mail.com", "password": "123456789"}, # Неверный формат имени
+        {"name": 12345, "email": "test@mail.com", "password": "123456789"},
         422,
         None,
     ),
     (
-        {"name": "test user", "email": 12345, "password": "123456789"}, # Неверный формат email
+        {"name": "test user", "email": 12345, "password": "123456789"},
         422,
         None,
     ),
     (
-        {"name": "test user", "email": "test@mail.com", "password": 12345}, # Неверный формат пароля
+        {"name": "test user", "email": "test@mail.com", "password": 12345},
         422,
         None,
     ),
@@ -74,56 +74,56 @@ test_cases_user_router_for_update_user = [
         {"name": "test user update", "email": "test@update.com", "password": "987654321", "id": 1},
     ),
     (
-        None, # id отсутствует
+        None,
         {"name": "test user update", "email": "test@update.com", "password": "987654321"},
         422,
         None,
     ),
     (
-        11, # id выходит из диапазона
+        11,
         {"name": "test user update", "email": "test@update.com", "password": "987654321"},
         404,
         None,
     ),
     (
-        False, # id имеет неверный формат
+        False,
         {"name": "test user update", "email": "test@update.com", "password": "987654321"},
         422,
         None,
     ),
     (
         1,
-        {"email": "test@update.com", "password": "987654321"}, # Отсутствует имя пользователя
+        {"email": "test@update.com", "password": "987654321"},
         422,
         None,
     ),
     (
         1,
-        {"name": "test user update", "password": "987654321"}, # Отсутствует email
+        {"name": "test user update", "password": "987654321"},
         422,
         None,
     ),
     (
         1,
-        {"name": "test user update", "email": "test@update.com"}, # Отсутствует пароль
+        {"name": "test user update", "email": "test@update.com"},
         422,
         None,
     ),
     (
         1,
-        {"name": 12345, "email": "test@update.com", "password": "987654321"}, # Неверный формат имени
+        {"name": 12345, "email": "test@update.com", "password": "987654321"},
         422,
         None,
     ),
     (
         1,
-        {"name": "test user update", "email": 12345, "password": "987654321"}, # Неверный формат email
+        {"name": "test user update", "email": 12345, "password": "987654321"},
         422,
         None,
     ),
     (
         1,
-        {"name": "test user update", "email": "test@update.com", "password": 12345}, # Неверный формат пароля
+        {"name": "test user update", "email": "test@update.com", "password": 12345},
         422,
         None,
     ),
@@ -136,17 +136,17 @@ test_cases_user_router_for_delete_user = [
         {"message": "User with ID 1 deleted successfully"},
     ),
     (
-        4, # id выходит из диапазона
+        4,
         404,
         None,
     ),
     (
-        True, # неверный формат id
+        True,
         422,
         None,
     ),
     (
-        None, # id отсутствует
+        None,
         422,
         None,
     ),

@@ -31,9 +31,9 @@ async def async_test_db() -> None:
 
     :return: Функция не содержит return, поэтому по завершении возвращает None (неявно).
     """
-    await create_test_tables()  # Создание тестовых таблиц
-    yield  # Приостановка работы функции
-    await drop_test_tables()  # Удаление тестовых таблиц
+    await create_test_tables()
+    yield
+    await drop_test_tables()
 
 
 @pytest.fixture(

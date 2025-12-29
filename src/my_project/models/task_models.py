@@ -16,7 +16,6 @@ from sqlalchemy.orm import relationship
 from src.my_project.database_core.database import Base
 
 
-# Декларативная модель, представляющая таблицу "tasks"
 class TaskModel(Base):
     """
     Модель задачи.
@@ -31,11 +30,11 @@ class TaskModel(Base):
       Свойство back_populates должно соответствовать атрибуту в UserModel, который содержит
       список задач (например, tasks).
     """
-    __tablename__ = "tasks"  # Имя таблицы в базе данных
+    __tablename__ = "tasks"
 
-    id = Column(Integer, primary_key=True)  # Уникальный идентификатор задачи
-    title = Column(String)  # Название задачи
-    body = Column(String)  # Описание содержания задачи
-    status = Column(String)  # Статус задачи
-    user = Column(Integer, ForeignKey("users.id"))  # ID пользователя, создавшего задачу
-    author = relationship("UserModel", back_populates="tasks")  # Отношение к модели пользователя (UserModel)
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+    body = Column(String)
+    status = Column(String)
+    user = Column(Integer, ForeignKey("users.id"))
+    author = relationship("UserModel", back_populates="tasks")

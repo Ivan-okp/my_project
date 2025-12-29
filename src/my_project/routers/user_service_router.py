@@ -38,8 +38,6 @@ router = APIRouter(
 )
 
 
-# Роутер для операций над задачами. prefix задаёт префикс всех путей в этом модуле,
-# tags используется в автодокументации (Swagger/OpenAPI).
 @router.post(
     "/create_user",
     summary="Создание учетной записи",

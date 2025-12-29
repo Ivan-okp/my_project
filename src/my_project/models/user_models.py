@@ -26,10 +26,10 @@ class UserModel(Base):
     - tasks: ORM-отношение к задачам пользователя (список TaskModel), двунаправленное
       через backpopulates="author" в TaskModel.
     """
-    __tablename__ = "users"   # Имя таблицы в базе данных
+    __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)  # Уникальный идентификатор пользователя
-    name = Column(String, unique=True)  # Имя пользователя
-    email = Column(String, unique=True)  # Адрес электронной почты пользователя
-    password = Column(String)  # Пароль пользователя
-    tasks = relationship("TaskModel", back_populates="author")  # Отношение к модели задач (TaskModel).
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    email = Column(String, unique=True)
+    password = Column(String)
+    tasks = relationship("TaskModel", back_populates="author")
