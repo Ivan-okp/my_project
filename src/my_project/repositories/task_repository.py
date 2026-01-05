@@ -35,7 +35,7 @@ class TaskRepository:
         Получает список всех задач из базы данных.
 
         :param session: Асинхронная сессия.
-        :return: List[TaskModel]: Список объектов задач.
+        :return: List[TaskModel] - Список объектов задач.
         """
         stmt = select(TaskModel)
         result = await session.execute(stmt)
@@ -53,7 +53,7 @@ class TaskRepository:
 
         :param task_id: ID задачи.
         :param session: Асинхронная сессия.
-        :return: TaskModel: Объект задачи, если задача найдена.
+        :return: TaskModel - Объект задачи, если задача найдена.
         """
         stmt = select(TaskModel).where(TaskModel.id == task_id)
         result = await session.execute(stmt)
@@ -76,7 +76,7 @@ class TaskRepository:
 
         :param new_task: Объект TaskCreate, содержащий данные для новой задачи.
         :param session: Асинхронная сессия.
-        :return: TaskModel: Добавленный объект задачи.
+        :return: TaskModel - Добавленный объект задачи.
         """
         stmt = select(UserModel).where(UserModel.id == new_task.user)
         result = await session.execute(stmt)
@@ -105,13 +105,9 @@ class TaskRepository:
         :param task_id: ID задачи.
         :param task_for_update: Объект TaskUpdate, содержащий новые данные для задачи.
         :param session: Асинхронная сессия.
-        :return: TaskModel: Обновленный объект задачи.
+        :return: TaskModel - Обновленный объект задачи.
         """
-        if task_for_update.title is None or task_for_update.body is None or task_for_update.status is None:
-            raise HTTPException(
-                status_code=422,
-                detail="Invalid content",
-            )
+        update_data = task_for_update.model_dump(exclude_unset=True)
         stmt = select(TaskModel).where(TaskModel.id == task_id)
         result = await session.execute(stmt)
         task = result.scalar_one_or_none()
@@ -120,7 +116,7 @@ class TaskRepository:
                 status_code=404,
                 detail="task"
             )
-        for key, value in task_for_update.model_dump().items():
+        for key, value in update_data.items():
             setattr(task, key, value)
         await session.commit()
         return task
@@ -136,7 +132,7 @@ class TaskRepository:
 
         :param task_id: ID задачи.
         :param session: Асинхронная сессия.
-        :return: TaskModel: Удаленный объект задачи.
+        :return: TaskModel - Удаленный объект задачи.
         """
         stmt = select(TaskModel).where(TaskModel.id == task_id)
         result = await session.execute(stmt)

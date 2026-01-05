@@ -34,7 +34,7 @@ class UserRepository:
         Получает список всех пользователей из базы данных.
 
         :param session: Асинхронная сессия
-        :return: List[UserModel]: Список объектов пользователей.
+        :return: List[UserModel] - Список объектов пользователей.
         """
         stmt = select(UserModel)
         result = await session.execute(stmt)
@@ -52,7 +52,7 @@ class UserRepository:
 
         :param user_id: ID пользователя.
         :param session: Асинхронная сессия.
-        :return: UserModel: Объект пользователя, если пользователь найден.
+        :return: UserModel - Объект пользователя, если пользователь найден.
         """
         stmt = select(UserModel).where(UserModel.id == user_id)
         result = await session.execute(stmt)
@@ -75,12 +75,13 @@ class UserRepository:
 
         :param user: Объект UserCreate, содержащий данные для нового пользователя.
         :param session: Асинхронная сессия.
-        :return: UserModel: Добавленный объект пользователя.
+        :return: UserModel - Добавленный объект пользователя.
         """
         user_dict = user.dict()
         new_user = UserModel(**user_dict)
         session.add(new_user)
         await session.commit()
+        await session.refresh(new_user)
         return new_user
 
     @classmethod
@@ -96,12 +97,13 @@ class UserRepository:
         :param user_id: ID пользователя.
         :param user_update: Объект UserUpdate, содержащий новые данные для пользователя.
         :param session: Асинхронная сессия.
-        :return: UserModel: Обновленный объект пользователя.
+        :return: UserModel - Обновленный объект пользователя.
         """
-        if user_update.name is None or user_update.email is None or user_update.password is None:
+        update_data = user_update.model_dump(exclude_unset=True)
+        if not update_data:
             raise HTTPException(
                 status_code=422,
-                detail="Invalid content",
+                detail="No fields to update"
             )
         stmt = select(UserModel).where(UserModel.id == user_id)
         result = await session.execute(stmt)
@@ -111,7 +113,7 @@ class UserRepository:
                 status_code=404,
                 detail="User not found",
             )
-        for key, value in user_update.model_dump().items():
+        for key, value in update_data.items():
             setattr(user_for_update, key, value)
 
         await session.commit()
@@ -128,7 +130,7 @@ class UserRepository:
 
         :param user_id: ID пользователя.
         :param session: Асинхронная сессия.
-        :return: UserModel: Удаленный объект пользователя.
+        :return: UserModel - Удаленный объект пользователя.
         """
         stmt = select(UserModel).where(UserModel.id == user_id)
         result = await session.execute(stmt)

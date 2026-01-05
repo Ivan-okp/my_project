@@ -12,7 +12,9 @@ from fastapi import (
     APIRouter,
     Form,
     Depends,
-    HTTPException
+    HTTPException,
+    status,
+    Response
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.my_project.database_core.database import get_db
@@ -45,9 +47,9 @@ router = APIRouter(
 )
 async def create_new_user(
         session: AsyncSession = Depends(get_db),
-        name=Form(),
-        email=Form(),
-        password=Form(),
+        name=Form(...),
+        email=Form(...),
+        password=Form(...),
 ) -> DbUser:
     """
     Создать нового пользователя.
@@ -56,7 +58,7 @@ async def create_new_user(
     :param name: Имя пользователя.
     :param email: Email пользователя.
     :param password: Пароль пользователя.
-    :return: DbUser: Объект DbUser, представляющий пользователя.
+    :return: DbUser - Объект DbUser, представляющий пользователя.
     """
     if name is None or email is None or password is None:
         raise HTTPException(
@@ -83,8 +85,8 @@ async def create_new_user(
 )
 async def login_for_create_task(
         session: AsyncSession = Depends(get_db),
-        username: str = Form(),
-        password: str = Form(),
+        username: str = Form(...),
+        password: str = Form(...),
 ) -> TokenInfo:
     """
     Выполнить аутентификацию пользователя и вернуть JWT.
@@ -92,7 +94,7 @@ async def login_for_create_task(
     :param session: Асинхронная сессия.
     :param username: Имя пользователя.
     :param password: Пароль пользователя.
-    :return: DbUser: Объект DbUser, представляющий пользователя.
+    :return: DbUser - Объект DbUser, представляющий пользователя.
     """
     user_for_encode = await ServiceRepository.login_user(
         username=username,
@@ -122,9 +124,9 @@ async def login_for_create_task(
 )
 async def change_user(
         session: AsyncSession = Depends(get_db),
-        name=Form(),
-        email=Form(),
-        password=Form(),
+        name=Form(...),
+        email=Form(...),
+        password=Form(...),
         user=Depends(get_current_user),
 ) -> DbUser:
     """
@@ -135,7 +137,7 @@ async def change_user(
     :param email: Email пользователя.
     :param password: Пароль пользователя.
     :param user: Объект текущего пользователя, полученный через Dependency Injection.
-    :return: DbUser: Объект DbUser, представляющий пользователя.
+    :return: DbUser - Объект DbUser, представляющий пользователя.
     """
     user_for_change = UserUpdate(
         name=name,
@@ -158,22 +160,19 @@ async def change_user(
 async def delete_current_user(
         session: AsyncSession = Depends(get_db),
         user=Depends(get_current_user),
-) -> Dict[str, str]:
+) -> Response:
     """
     Удалить учетную запись текущего пользователя.
 
     :param session: Асинхронная сессия.
     :param user: Объект текущего пользователя, полученный через Dependency Injection.
-    :return: Dict[str, str]: Словарь с сообщением об успешном удалении.
+    :return: Dict[str, str] - Словарь с сообщением об успешном удалении.
     """
     user_for_delete = await UserRepository.delete_user(
         user_id=user.id,
         session=session
     )
-    if user_for_delete:
-        return {"message": f"User with ID {user.id} deleted successfully"}
+    if not user_for_delete:
+        raise HTTPException(status_code=404, detail="User is not exists")
 
-    raise HTTPException(
-        status_code=404,
-        detail="User is not exist"
-    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

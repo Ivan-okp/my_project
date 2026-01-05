@@ -59,7 +59,7 @@ class TaskUpdate(BaseModel):
     """
     title: str = Field(default=None, min_length=2, max_length=20)
     body: str = Field(default=None, min_length=20, max_length=200)
-    status: Literal["New", "In process", "Finished"] = Field(...)
+    status: Literal["New", "In_process", "Finished"] = Field(...)
 
 
 class DbTask(BaseModel):

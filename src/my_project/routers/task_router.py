@@ -13,7 +13,9 @@ from typing import (
 from fastapi import (
     APIRouter,
     HTTPException,
-    Depends
+    Depends,
+    Response,
+    status
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.my_project.database_core.database import get_db
@@ -42,7 +44,7 @@ async def get_tasks(
     Получает список всех задач.
 
     :param session: Асинхронная сессия.
-    :return: List[DbTask]: Список объектов DbTask, представляющих задачи.
+    :return: List[DbTask] - Список объектов DbTask, представляющих задачи.
     """
     tasks = await TaskRepository.get_all(
         session=session,
@@ -64,7 +66,7 @@ async def get_task(
 
     :param task_id: ID задачи.
     :param session: Асинхронная сессия.
-    :return: DbTask: Объект DbTask, представляющий задачу.
+    :return: DbTask - Объект DbTask, представляющий задачу.
     """
     task = await TaskRepository.get_one(
         task_id=task_id,
@@ -90,12 +92,17 @@ async def add_task(
 
     :param task: Объект TaskCreate, содержащий данные для новой задачи.
     :param session: Асинхронная сессия.
-    :return: DbTask: Объект DbTask, представляющий созданную задачу.
+    :return: DbTask - Объект DbTask, представляющий созданную задачу.
     """
     db_task = await TaskRepository.add_task(
         new_task=task,
         session=session,
     )
+    if db_task is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Incorrect request"
+        )
 
     return db_task
 
@@ -105,7 +112,7 @@ async def add_task(
     summary="Обновить информацию о задаче",
     response_model=DbTask
 )
-async def task_update(
+async def update_task(
         task_id: int,
         task_for_update: TaskUpdate,
         session: AsyncSession = Depends(get_db)
@@ -116,7 +123,7 @@ async def task_update(
     :param task_id: ID задачи.
     :param task_for_update: Объект TaskUpdate, содержащий новые данные для задачи.
     :param session: Асинхронная сессия.
-    :return: DbTask: Объект DbTask, представляющий обновленную задачу.
+    :return: DbTask - Объект DbTask, представляющий обновленную задачу.
     """
     task = await TaskRepository.update_task(
         task_id=task_id,
@@ -126,29 +133,32 @@ async def task_update(
     if task:
         return task
 
-    raise HTTPException(status_code=404, detail="Task is not exist")
+    raise HTTPException(
+        status_code=404,
+        detail="Task is not exist"
+    )
 
 
 @router.delete(
     "/{task_id}",
     summary="Удалить задачу"
 )
-async def task_delete(
+async def delete_task(
         task_id: int,
         session: AsyncSession = Depends(get_db),
-) -> Dict[str, str]:
+) -> Response:
     """
     Удаляет задачу по ее ID.
 
     :param task_id: ID задачи.
     :param session: Асинхронная сессия.
-    :return: Dict[str, str]: Словарь с сообщением об успешном удалении.
+    :return: Dict[str, str] - Словарь с сообщением об успешном удалении.
     """
     task_for_delete = await TaskRepository.delete_task(
         task_id=task_id,
         session=session,
     )
-    if task_for_delete:
-        return {"message": f"Task with ID {task_id} deleted successfully"}
+    if not task_for_delete:
+        raise HTTPException(status_code=404, detail="Task is not exists")
 
-    raise HTTPException(status_code=404, detail="Task is not exists")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

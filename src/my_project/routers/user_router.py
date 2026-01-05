@@ -12,7 +12,10 @@ from typing import (
 )
 from fastapi import (
     APIRouter,
-    HTTPException, Depends
+    HTTPException,
+    Depends,
+    status,
+    Response,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.my_project.database_core.database import get_db
@@ -41,7 +44,7 @@ async def get_users(
     Получает список всех пользователей.
 
     :param session: Асинхронная сессия.
-    :return: List[DbUser]: Список объектов DbUser, представляющих пользователей.
+    :return: List[DbUser] - Список объектов DbUser, представляющих пользователей.
     """
     users = await UserRepository.get_all(
         session=session
@@ -63,7 +66,7 @@ async def get_user(
 
     :param user_id: ID пользователя.
     :param session: Асинхронная сессия.
-    :return: DbUser: Объект DbUser, представляющий пользователя.
+    :return: DbUser - Объект DbUser, представляющий пользователя.
     """
     user = await UserRepository.get_one(
         user_id=user_id,
@@ -88,7 +91,7 @@ async def add_user(
 
     :param user: Объект UserCreate, содержащий данные для нового пользователя.
     :param session: Асинхронная сессия.
-    :return: Асинхронная сессия базы данных, предоставляемая через Dependency Injection.
+    :return: DbUser - Объект DbUser, представляющий созданного пользователя.
     """
     db_user = await UserRepository.add_user(
         user=user,
@@ -113,7 +116,7 @@ async def update_user(
     :param user_id: ID пользователя.
     :param user_for_update:  Объект UserUpdate, содержащий новые данные для пользователя.
     :param session: Асинхронная сессия.
-    :return: DbUser: Объект DbUser, представляющий обновленного пользователя.
+    :return: DbUser - Объект DbUser, представляющий обновленного пользователя.
     """
     user = await UserRepository.update_user(
         user_id=user_id,
@@ -133,19 +136,19 @@ async def update_user(
 async def delete_user(
         user_id: int,
         session: AsyncSession = Depends(get_db)
-) -> Dict[str, str]:
+) -> Response:
     """
     Удаляет пользователя по его ID.
 
     :param user_id: ID пользователя.
     :param session: Асинхронная сессия.
-    :return: Dict[str, str]: Словарь с сообщением об успешном удалении.
+    :return: Dict[str, str] - Словарь с сообщением об успешном удалении.
     """
     user_for_delete = await UserRepository.delete_user(
         user_id=user_id,
         session=session,
     )
-    if user_for_delete:
-        return {"message": f"User with ID {user_id} deleted successfully"}
+    if not user_for_delete:
+        raise HTTPException(status_code=404, detail="User is not exists")
 
-    raise HTTPException(status_code=404, detail="User is not exist")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

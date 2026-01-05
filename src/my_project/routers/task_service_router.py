@@ -11,7 +11,9 @@ from fastapi import (
     Depends,
     Form,
     HTTPException,
-    Query
+    Query,
+    status,
+    Response
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.my_project.database_core.database import get_db
@@ -49,9 +51,9 @@ async def get_all_tasks(
     """
     Получает список всех задач, принадлежащих текущему пользователю.
 
-    :param user:  Объект текущего пользователя, полученный через Dependency Injection.
+    :param user: Объект текущего пользователя, полученный через Dependency Injection.
     :param session: Асинхронная сессия.
-    :return: List[DbTask]: Список объектов DbTask, представляющих задачи
+    :return: List[DbTask] - Список объектов DbTask, представляющих задачи
     """
     tasks = await ServiceRepository.get_tasks_by_current_user(
         user_id=user.id,
@@ -84,7 +86,7 @@ async def get_specific_task(
     :param task_title: Название задачи.
     :param user:  Объект текущего пользователя, полученный через Dependency Injection.
     :param session: Асинхронная сессия.
-    :return: DbTask: Объект DbTask, представляющий задачу.
+    :return: DbTask - Объект DbTask, представляющий задачу.
     """
     if task_id:
         task = await ServiceRepository.get_task_by_id_or_title(
@@ -98,7 +100,7 @@ async def get_specific_task(
                 detail="Task not found"
             )
         return task
-    if task_title:
+    elif task_title:
         task = await ServiceRepository.get_task_by_id_or_title(
             task_title=task_title,
             user_id=user.id,
@@ -110,11 +112,12 @@ async def get_specific_task(
                 detail="Task not found"
             )
         return task
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Incorrect request"
+        )
 
-    raise HTTPException(
-        status_code=404,
-        detail="Task not found"
-    )
 
 
 @router.post(
@@ -123,9 +126,9 @@ async def get_specific_task(
     response_model=DbTask,
 )
 async def create_task(
-        title: str = Form(),
-        body: str = Form(),
-        status: TaskStatus = Form(),
+        title: str = Form(...),
+        body: str = Form(...),
+        status: TaskStatus = Form(...),
         user=Depends(get_current_user),
         session: AsyncSession = Depends(get_db)
 ) -> DbTask:
@@ -137,7 +140,7 @@ async def create_task(
     :param status: Статус задачи.
     :param user: Объект текущего пользователя, полученный через Dependency Injection.
     :param session: Асинхронная сессия.
-    :return: DbTask: Объект DbTask, представляющий созданную задачу.
+    :return: DbTask - Объект DbTask, представляющий созданную задачу.
     """
     user = int(user.id)
     task = TaskCreateService(
@@ -150,6 +153,11 @@ async def create_task(
         new_task=task,
         session=session,
     )
+    if db_task is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Incorrect request"
+        )
 
     return db_task
 
@@ -174,7 +182,7 @@ async def update_task(
     :param task_title: Название задачи.
     :param user:  Объект текущего пользователя, полученный через Dependency Injection.
     :param session: Асинхронная сессия.
-    :return: DbTask: Объект DbTask, представляющий обновленную задачу.
+    :return: DbTask - Объект DbTask, представляющий обновленную задачу.
     """
     if task_id:
         task = await ServiceRepository.update_task(
@@ -205,7 +213,7 @@ async def delete_task(
         task_title: str = None,
         user=Depends(get_current_user),
         session: AsyncSession = Depends(get_db),
-) -> Dict[str, str]:
+) -> Response:
     """
     Удаляет существующую задачу, принадлежащую текущему пользователю.
 
@@ -213,7 +221,7 @@ async def delete_task(
     :param task_title: Название задачи.
     :param user: Объект текущего пользователя, полученный через Dependency Injection.
     :param session: Асинхронная сессия.
-    :return: DbTask: Объект DbTask, представляющий удаленную задачу.
+    :return: DbTask - Объект DbTask, представляющий удаленную задачу.
     """
     deleted_task = await ServiceRepository.delete_task(
         task_id=task_id,
@@ -221,8 +229,7 @@ async def delete_task(
         user_id=user.id,
         session=session,
     )
-    if task_id:
-        return {"message": f"Task with ID '{deleted_task.id}' was deleted"}
+    if not deleted_task:
+        raise HTTPException(status_code=404, detail="Task is not exists")
 
-    if task_title:
-        return {"message": f"Task with title '{deleted_task.title}' was deleted"}
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

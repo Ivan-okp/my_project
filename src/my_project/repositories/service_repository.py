@@ -41,7 +41,7 @@ class ServiceRepository:
         :param username: Имя пользователя.
         :param password: Пароль пользователя.
         :param session: Асинхронная сессия.
-        :return: UserModel: Объект пользователя, если аутентификация прошла успешно, иначе None.
+        :return: UserModel - Объект пользователя, если аутентификация прошла успешно, иначе None.
         """
         stmt = select(UserModel).where(UserModel.name == username).where(UserModel.password == password)
         result = await session.execute(stmt)
@@ -64,7 +64,7 @@ class ServiceRepository:
 
         :param user_id: ID пользователя.
         :param session: Асинхронная сессия.
-        :return: List[TaskModel]: Список объектов задач, назначенных пользователю.
+        :return: List[TaskModel] - Список объектов задач, назначенных пользователю.
         """
         stmt = select(TaskModel).where(TaskModel.user == user_id)
         result = await session.execute(stmt)
@@ -86,13 +86,13 @@ class ServiceRepository:
         :param user_id: ID пользователя.
         :param task_id: ID задачи.
         :param task_title: Название задачи.
-        :return: TaskModel: Объект задачи, если задача найдена, иначе None.
+        :return: TaskModel - Объект задачи, если задача найдена, иначе None.
         """
         if task_id is not None:
             stmt = select(TaskModel).where(TaskModel.user == user_id).where(TaskModel.id == task_id)
-        if task_title is not None:
+        elif task_title is not None:
             stmt = select(TaskModel).where(TaskModel.user == user_id).where(TaskModel.title == task_title)
-        if task_id is None and task_title is None:
+        else:
             raise HTTPException(
                 status_code=400,
                 detail="Not enough data"
@@ -123,22 +123,24 @@ class ServiceRepository:
         :param task_for_update: Объект TaskUpdate, содержащий новые данные для задачи.
         :param task_id: ID задачи.
         :param task_title: Название задачи.
-        :return: TaskModel: Обновленный объект задачи.
+        :return: TaskModel - Обновленный объект задачи.
         """
-        if task_for_update.title is None or task_for_update.body is None or task_for_update.status is None:
+        update_data = task_for_update.model_dump(exclude_unset=True)
+        if not update_data:
             raise HTTPException(
                 status_code=422,
-                detail="Incomplete data"
+                detail="No fields to update"
             )
         if task_id:
             stmt = select(TaskModel).where(TaskModel.user == user_id).where(TaskModel.id == task_id)
-        if task_title:
+        elif task_title:
             stmt = select(TaskModel).where(TaskModel.user == user_id).where(TaskModel.title == task_title)
-        if task_id is None and task_title is None:
+        else:
             raise HTTPException(
                 status_code=400,
                 detail="Not enough data"
             )
+
         result = await session.execute(stmt)
         updating_task: TaskModel | None = result.scalar_one_or_none()
         if updating_task is None:
@@ -146,7 +148,7 @@ class ServiceRepository:
                 status_code=404,
                 detail="Task not found"
             )
-        for key, value in task_for_update.model_dump().items():
+        for key, value in update_data.items():
             setattr(updating_task, key, value)
         await session.commit()
         return updating_task
@@ -166,12 +168,17 @@ class ServiceRepository:
         :param task_id: ID задачи.
         :param task_title: Название задачи.
         :param user_id: ID пользователя.
-        :return:  TaskModel: Удаленный объект задачи.
+        :return: TaskModel - Удаленный объект задачи.
         """
         if task_id:
             stmt = select(TaskModel).where(TaskModel.user == user_id).where(TaskModel.id == task_id)
-        if task_title:
+        elif task_title:
             stmt = select(TaskModel).where(TaskModel.user == user_id).where(TaskModel.title == task_title)
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Not enough data"
+            )
         result = await session.execute(stmt)
         task_for_delete: TaskModel | None = result.scalar_one_or_none()
         if task_for_delete is None:
